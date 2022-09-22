@@ -7,7 +7,7 @@ const morgan = require('morgan')
 const mongoose = require('mongoose')
 const routes = require(join(__dirname, 'api', 'routes', 'v1'))
 
-require(join(__dirname, 'config', 'redis'))
+require(join(__dirname, 'config', 'database'))
 
 // Prevent common security vulnerabilities
 app.use(helmet())
@@ -26,6 +26,9 @@ app.use(cors(corsOptions))
 // Parse json body
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+// app.use(cors());
+
+mongoose.Promise = global.Promise
 
 app.use(function (err, req, res, next) {
   res.status(err.status || 500).json({
@@ -36,20 +39,11 @@ app.use(function (err, req, res, next) {
   })
 })
 
-const db = require(join(__dirname, 'api', 'database', 'models'))
-db.sequelize.sync()
-// // drop the table if it already exists
-// db.sequelize.sync({ force: true }).then(() => {
-//   console.log("Drop and re-sync db.");
-// });
-
 app.use('/api/v1/', routes)
-
-app.use((req, res) => {
-  return res.send('404 - Not Found')
-})
-
 // // redirect if no other route is hit
+// app.use((req, res) => {
+//   res.redirect('https://www.google.com')
+// })
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
