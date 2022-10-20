@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     isVerified: { type: Boolean, default: true },
-
+    hash: {type: String, default: ''},
     plannedTrip: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Trip',
