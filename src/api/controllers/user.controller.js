@@ -5,7 +5,10 @@ const Package = require(join(__dirname, '..', 'models', 'package.model'))
 const Hotel = require(join(__dirname, '..', 'models', 'hotel.model'))
 const Place = require(join(__dirname, '..', 'models', 'place.model'))
 const Review = require(join(__dirname, '..', 'models', 'review.model'))
-const SendEmail = require(join(__dirname, '..', 'utils', 'sendEmail'))
+const SendEmail = require(join(__dirname, '..', 'workers', 'sendEmail.worker'))
+const Trip = require(join(__dirname, '..', 'models', 'trip.model'))
+const { v4: uuidv4 } = require('uuid');
+
 
 exports.createPlanTrip = async (req, res) => {
     let { name, description, startDate, endDate, city, package, hotel, planning } = req.body;
@@ -182,6 +185,38 @@ exports.getTrip = async (req, res) => {
     }
 }
 
+exports.getAllTrip = async (req, res) => {
+    try {
+        const trip = await Trip.find({ members: req.user.id }).populate('city').populate('package').populate('hotel.hotel').populate('planning.place');
+        if (!trip) {
+            return res.status(404).json({
+                message: 'Trip not found',
+                data: null
+            });
+        }
+        let data = []
+        for (let i = 0; i < trip.length; i++) {
+            let obj = {
+                id: trip[i]._id,
+                name: trip[i].name,
+                description: trip[i].description,
+                startDate: trip[i].startDate,
+                endDate: trip[i].endDate,
+                city: trip[i].city.name
+            }
+
+            data.push(obj);
+        }
+        return res.status(200).json({
+            message: 'Trip found',
+            data
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+}
 // to add trip modification
 
 

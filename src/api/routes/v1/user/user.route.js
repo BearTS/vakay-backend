@@ -1,4 +1,5 @@
-const { createPlanTrip, inviteUser, acceptInvitation, getTrip, createReview } = require('../../../controllers/user.controller');
+const {join} = require('path');
+const { createPlanTrip, getAllTrip, inviteUser, acceptInvitation, getTrip, createReview } = require('../../../controllers/user.controller');
 const { authorise } = require('../../../middleware/authorise.middleware');
 const validate = require(join(__dirname, '..', '..', '..', 'middleware', 'validate.middleware'))
 const Joi = require("joi");
@@ -31,7 +32,7 @@ const schema = {
         hash: Joi.string().required()
     }),
     getTrip: Joi.object({
-        id: Joi.string().required()
+        id: Joi.string()
     }),
     createReview: Joi.object({
         id: Joi.string().required(),
@@ -42,14 +43,13 @@ const schema = {
 
 router.post('/trip',validate(schema.createPlanTrip, 'body'), authorise, createPlanTrip);
 
-router.put('/invite', validate(schema.inviteUser, 'body'), authorise, inviteUser);
+router.get('/trip/:id', validate(schema.getTrip, 'params'), authorise, getTrip);
+router.get('/trip/', authorise, getAllTrip);
 
+router.put('/invite', validate(schema.inviteUser, 'body'), authorise, inviteUser);
 router.put('/accept/:hash', validate(schema.acceptInvitation, 'params'), authorise, acceptInvitation);
 
-router.get('/trip/:id', validate(schema.getTrip, 'params'), authorise, getTrip);
-
 router.post('/review', validate(schema.createReview, 'body'), authorise, createReview);
-
 
 
 
