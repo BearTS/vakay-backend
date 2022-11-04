@@ -7,8 +7,7 @@ const PackageSchema = new mongoose.Schema({
     city: { type: mongoose.Schema.Types.ObjectId, ref: 'City', required: true },
     hotels: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Hotel' }],
     places: [{
-        start: { type: Date, required: true },
-        end: { type: Date, required: true },
+        days: { type: Number, required: true },
         place: { type: mongoose.Schema.Types.ObjectId, ref: 'Place' },
     }],
     image: { type: String, required: true },

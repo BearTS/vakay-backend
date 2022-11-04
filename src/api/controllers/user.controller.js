@@ -4,6 +4,7 @@ const City = require(join(__dirname, '..', 'models', 'city.model'))
 const Package = require(join(__dirname, '..', 'models', 'package.model'))
 const Hotel = require(join(__dirname, '..', 'models', 'hotel.model'))
 const Place = require(join(__dirname, '..', 'models', 'place.model'))
+const Review = require(join(__dirname, '..', 'models', 'review.model'))
 const SendEmail = require(join(__dirname, '..', 'utils', 'sendEmail'))
 
 exports.createPlanTrip = async (req, res) => {
@@ -70,6 +71,11 @@ exports.createPlanTrip = async (req, res) => {
             hotel: hotelarray,
             planning: placeArray
         }
+        const trip = await Trip.create(myObj);
+        return res.status(200).json({
+            message: 'Trip created successfully',
+            data: trip
+        });
     } catch (err) {
         return res.status(500).json({
             message: err.message
@@ -178,3 +184,30 @@ exports.getTrip = async (req, res) => {
 
 // to add trip modification
 
+
+exports.createReview = async (req, res) => {
+    const { id, rating, comment } = req.body;
+    try {
+        const hotel = await Hotel.findById(id);
+        if (!hotel) {
+            return res.status(404).json({
+                message: 'Hotel not found',
+                data: null
+            });
+        }
+        const review = await Review.create({
+            rating: rating,
+            comment: comment,
+            hotel: id,
+            user: req.user.id
+        });
+        return res.status(200).json({
+            message: 'Review created successfully',
+            data: review
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+}

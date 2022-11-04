@@ -4,6 +4,8 @@ const express = require('express')
 const router = express.Router()
 
 const authRouter = require(join(__dirname, 'auth', 'auth.route'))
+const cityRouter = require(join(__dirname, 'city', 'city.route'))
+
 
 router.get('/', async (req, res) => {
     res.status(404).json({
@@ -17,4 +19,6 @@ router.get('/', async (req, res) => {
 
 // router.use('/user', userRoute)
 router.use('/auth', authRouter)
+router.use('/city', cityRouter)
+
 module.exports = router
