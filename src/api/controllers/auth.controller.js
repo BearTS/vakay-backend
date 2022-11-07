@@ -2,7 +2,8 @@ const { join } = require('path')
 const User = require(join(__dirname, '..', 'models', 'user.model'))
 const RefreshToken = require(join(__dirname, '..', 'models', 'token.model'))
 const jwt = require('jsonwebtoken')
-
+const bcrypt = require('bcryptjs')
+const sendEmail = require(join(__dirname, '..', 'workers', 'sendEmail.worker'));
 const createToken = async (user) => {
     let token = await jwt.sign({ id: user._id }, process.env.SECRET_JWT, {
         expiresIn: 60 * 60 * 24
@@ -15,26 +16,39 @@ exports.signup = async (req, res) => {
     try {
         let user = await User.findOne({ email });
         if (user) {
-            return res.status(400).json({
-                message: 'User already exists'
+            return res.status(409).json({
+                success: false,
+                error: 'Email already exists'
             });
         }
         if (password !== confirmpass) {
-            return res.status(400).json({
-                message: 'Passwords do not match'
+            return res.status(422).json({
+                success: false,
+                error: 'Passwords do not match'
             });
         }
+        let verifyhash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         user = await User.create({
             name,
             email,
-            password
+            password,
+            verifyhash
         })
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        await user.save();
+        const subject = 'Verify your email';
+        const html = `<p>Please verify your email by clicking on the link below:</p>
+        <a href="http://localhost:3000/v1/auth/verify/${user._id}/${verifyhash}">Verify</a>`;
+        await sendEmail(user.email, subject, html);
         return res.status(201).json({
-            message: 'User created successfully'
+            success: true,
+            message: 'User created, Check email for verification'
         });
     } catch (error) {
         console.log(error);
         return res.status(500).json({
+            success: false,
             message: 'Internal server error'
         });
     }
@@ -45,25 +59,29 @@ exports.login = async (req, res) => {
     try {
         let user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({
-                message: 'Invalid credentials'
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid credentials or user not found'
             });
         }
-        // if (!user.isVerified) {
-        //     return res.status(400).json({
-        //         message: 'Please verify your email'
-        //     });
-        // }
-        let isMatch = await user.comparePassword(password);
+        if (!user.isVerified) {
+            return res.status(401).json({
+                success: false,
+                error: 'User is not verified, Please check email'
+            });
+        }
+        const isMatch = await bcrypt.compare(password, user.password)
         if (!isMatch) {
-            return res.status(400).json({
-                message: 'Invalid credentials'
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid credentials or user not found'
             });
         }
         let token = await createToken(user);
         let refreshToken = await RefreshToken.createToken(user);
 
         return res.status(200).json({
+            success: true,
             message: 'Login successful',
             token: {
                 accessToken: token,
@@ -104,6 +122,36 @@ exports.refreshToken = async (req, res) => {
         console.log(error);
         return res.status(500).json({
             message: 'Internal server error'
+        });
+    }
+}
+
+exports.verifyEmail = async (req, res) => {
+    try {
+        let user = await User.findOne({ _id: req.params.id, verifyhash: req.params.hash });
+        if (!user) {
+            return res.status(409).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+        if (user.isVerified) {
+            return res.status(409).json({
+                success: false,
+                error: 'User already verified'
+            });
+        }
+        user.isVerified = true;
+        await user.save();
+        return res.status(200).json({
+            success: true,
+            message: 'Email verified successfully'
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            success: false,
+            error: 'Internal server error'
         });
     }
 }

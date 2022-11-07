@@ -16,11 +16,17 @@ const schema = {
         email: Joi.string().email().required(),
         password: Joi.string().required()
     }),
+    verify: Joi.object({
+        id: Joi.string().required().length(24),
+        hash: Joi.string().required()
+    }),
 }
 
-router.post('/signup', validate(schema.signup), auth.signup)
-router.post('/login', validate(schema.login), auth.login)
+router.post('/signup', validate(schema.signup, 'body'), auth.signup)
+router.post('/login', validate(schema.login, 'body'), auth.login)
 
+
+router.get('/verify/:id/:hash',validate(schema.verify, 'params', 'Invalid verification link'), auth.verifyEmail);
 router.post('/refreshtoken', auth.refreshToken)
 router.get('/', authorise, async (req, res) => {
     return res.status(200).json({
