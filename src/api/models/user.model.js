@@ -6,15 +6,14 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     isVerified: { type: Boolean, default: false },
-    hash: {type: String, default: ''},
-    verifyhash: {type: String, default: ''},
+    hash: { type: String, default: '' },
+    verifyhash: { type: String, default: '' },
     plannedTrip: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Trip',
+      ref: 'Trip'
     }
   },
   { timestamps: true }
 )
-
 
 module.exports = mongoose.model('User', UserSchema)

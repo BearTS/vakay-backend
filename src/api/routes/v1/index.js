@@ -8,13 +8,13 @@ const cityRouter = require(join(__dirname, 'city', 'city.route'))
 const userRouter = require(join(__dirname, 'user', 'user.route'))
 
 router.get('/', async (req, res) => {
-    res.status(404).json({
-        message: 'Welcome to Vakay API!',
-        base_url: `${req.protocol}://${req.get('host')}/api/`,
-        endpoints: [
-            'GET: /all'
-        ]
-    })
+  res.status(404).json({
+    message: 'Welcome to Vakay API!',
+    base_url: `${req.protocol}://${req.get('host')}/api/`,
+    endpoints: [
+      'GET: /all'
+    ]
+  })
 })
 
 // router.use('/user', userRoute)

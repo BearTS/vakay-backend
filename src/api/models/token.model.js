@@ -1,42 +1,41 @@
-const mongoose = require("mongoose");
-const { v4: uuidv4 } = require('uuid');
+const mongoose = require('mongoose')
+const { v4: uuidv4 } = require('uuid')
 
-const jwtRefreshExpiration = 120;
+const jwtRefreshExpiration = 120
 
 const RefreshTokenSchema = new mongoose.Schema({
   token: String,
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User'
   },
-  expiryDate: Date,
-});
+  expiryDate: Date
+})
 
 RefreshTokenSchema.statics.createToken = async function (user) {
-  let expiredAt = new Date();
+  const expiredAt = new Date()
 
   expiredAt.setSeconds(
     expiredAt.getSeconds() + jwtRefreshExpiration
-  );
+  )
 
-  let _token = uuidv4();
+  const _token = uuidv4()
 
-  let _object = new this({
+  const _object = new this({
     token: _token,
     user: user._id,
-    expiryDate: expiredAt.getTime(),
-  });
+    expiryDate: expiredAt.getTime()
+  })
 
+  const refreshToken = await _object.save()
 
-  let refreshToken = await _object.save();
-
-  return refreshToken.token;
-};
+  return refreshToken.token
+}
 
 RefreshTokenSchema.statics.verifyExpiration = (token) => {
-  return token.expiryDate.getTime() < new Date().getTime();
+  return token.expiryDate.getTime() < new Date().getTime()
 }
- 
-const RefreshToken = mongoose.model("RefreshToken", RefreshTokenSchema);
 
-module.exports = RefreshToken;
+const RefreshToken = mongoose.model('RefreshToken', RefreshTokenSchema)
+
+module.exports = RefreshToken

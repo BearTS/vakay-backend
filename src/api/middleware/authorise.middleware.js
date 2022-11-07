@@ -16,11 +16,12 @@ const authorise = async (req, res, next) => {
   }
   if (token) {
     jwt.verify(token, jwtsecret, (err, decoded) => {
-      if (err)
+      if (err) {
         return res.status(401).json({
           success: false,
           error: 'Token is not valid.'
         })
+      }
       req.user = decoded
       next()
     })

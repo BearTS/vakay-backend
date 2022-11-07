@@ -4,12 +4,10 @@
 process.env.NODE_ENV = 'test'
 
 const User = require('../src/api/models/user.model')
-const RefreshTokenModel = require('../src/api/models/token.model')
 // dev deps
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../src/index')
-const path = require('path')
 
 chai.should()
 chai.use(chaiHttp)
@@ -195,7 +193,7 @@ describe('/POST /api/v1/auth/signup', () => {
         if (err) {
           console.log(err.stack)
         }
-        
+
         res.should.have.status(201)
         res.body.should.be.a('object')
         res.body.should.have.property('message')
@@ -316,7 +314,7 @@ describe('/GET /api/v1/auth/verify/:id/:hash', () => {
     res.should.have.status(409)
   })
 })
-let token;
+let token
 let refreshToken
 /*
     * Test for Login route
@@ -534,6 +532,7 @@ describe('/POST /api/v1/auth/refreshtoken', () => {
       })
   })
 })
+
 /*
     * Test for Resend Email Verification route
 */
