@@ -38,8 +38,8 @@ exports.signup = async (req, res) => {
     user.password = await bcrypt.hash(password, salt)
     await user.save()
     const subject = 'Verify your email'
-    const html = `<p>Please verify your email by clicking on the link below:</p>
-        <a href="http://localhost:3000/v1/auth/verify/${user._id}/${verifyhash}">Verify</a>`
+    const html = `Please verify your email by clicking on the link below:
+    http://localhost:3000/api/v1/auth/verify/${user._id}/${verifyhash} Click the link to Verify`
     await sendEmail(user.email, subject, html)
     return res.status(201).json({
       success: true,
