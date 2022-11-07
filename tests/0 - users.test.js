@@ -4,7 +4,7 @@
 process.env.NODE_ENV = 'test'
 
 const User = require('../src/api/models/user.model')
-
+const RefreshTokenModel = require('../src/api/models/token.model')
 // dev deps
 const chai = require('chai')
 const chaiHttp = require('chai-http')
@@ -464,9 +464,79 @@ describe('/POST /api/v1/auth/login', () => {
   })
 })
 
-// /*
-//     * Test for Resend Email Verification route
-// */
+describe('/POST /api/v1/auth/refreshtoken', () => {
+  it('refresh token is invalid', (done) => {
+    const data = {
+      refreshToken: 'test'
+    }
+    chai.request(server)
+      .post('/api/v1/auth/refreshtoken')
+      .send(data)
+      .end((err, res) => {
+        if (err) {
+          console.log(err.stack)
+        }
+        res.should.have.status(401)
+        res.body.should.be.a('object')
+        res.body.should.have.property('error')
+        res.body.should.have.property('success')
+        res.body.error.should.be.a('string')
+        res.body.success.should.be.a('boolean')
+        res.body.success.should.equal(false)
+        res.body.error.should.equal('Invalid refresh token')
+        done()
+      })
+  })
+  it('refresh token is not given', (done) => {
+    const data = {
+    }
+    chai.request(server)
+      .post('/api/v1/auth/refreshtoken')
+      .send(data)
+      .end((err, res) => {
+        if (err) {
+          console.log(err.stack)
+        }
+        res.should.have.status(422)
+        res.body.should.be.a('object')
+        res.body.should.have.property('error')
+        res.body.should.have.property('success')
+        res.body.error.should.be.a('string')
+        res.body.success.should.be.a('boolean')
+        res.body.success.should.equal(false)
+        res.body.error.should.equal('"refreshToken" is required')
+        done()
+      })
+  })
+  it('refresh token is valid', (done) => {
+    const data = {
+      refreshToken: refreshToken
+    }
+    chai.request(server)
+      .post('/api/v1/auth/refreshtoken')
+      .send(data)
+      .end((err, res) => {
+        if (err) {
+          console.log(err.stack)
+        }
+        res.should.have.status(200)
+        res.body.should.be.a('object')
+        res.body.should.have.property('message')
+        res.body.should.have.property('success')
+        res.body.should.have.property('token')
+        res.body.message.should.be.a('string')
+        res.body.success.should.be.a('boolean')
+        res.body.success.should.equal(true)
+        res.body.message.should.equal('Token refreshed successfully')
+        res.body.token.should.have.property('accessToken')
+        res.body.token.should.have.property('refreshToken')
+        done()
+      })
+  })
+})
+/*
+    * Test for Resend Email Verification route
+*/
 // describe('/POST /api/v1/user/resend', () => {
 //   it('email is invalid', (done) => {
 //     const user = {
@@ -578,9 +648,9 @@ describe('/POST /api/v1/auth/login', () => {
 //   })
 // })
 
-// /*
-//     * Test for get User route
-// */
+/*
+    * Test for get User route
+*/
 // describe('/GET /api/v1/user/', () => {
 //   it('no auth provided', (done) => {
 //     chai.request(server)
@@ -650,9 +720,9 @@ describe('/POST /api/v1/auth/login', () => {
 //   })
 // })
 
-// /*
-//     * Test for forgot Password route
-// */
+/*
+    * Test for forgot Password route
+*/
 // describe('/POST /api/v1/user/forgotPassword', () => {
 //   it('no email provided', (done) => {
 //     chai.request(server)
@@ -737,9 +807,9 @@ describe('/POST /api/v1/auth/login', () => {
 //   })
 // })
 
-// /*
-//     * Test for verify the link that is sent to the user for reset pass
-// */
+/*
+    * Test for verify the link that is sent to the user for reset pass
+*/
 // let id
 // let hash
 // describe('/GET /api/v1/user/reset/:id/:hash', () => {
@@ -804,9 +874,9 @@ describe('/POST /api/v1/auth/login', () => {
 //   })
 // })
 
-// /*
-//     * Test for reset password
-// */
+/*
+    * Test for reset password
+*/
 // describe('/POST /api/v1/user/reset/:id/:hash', () => {
 //   it('invalid id', (done) => {
 //     chai.request(server)

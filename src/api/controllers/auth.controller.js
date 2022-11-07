@@ -100,18 +100,28 @@ exports.refreshToken = async (req, res) => {
     const { refreshToken: requestToken } = req.body;
     try {
         if (requestToken == null) {
-            return res.status(403).json({ message: "Refresh Token is required!" });
+            return res.status(422).json({ 
+                success: false,
+                error: '"refreshToken" is required' 
+            });
         }
         let refreshToken = await RefreshToken.findOne({ token: requestToken });
         if (!refreshToken) {
-            return res.status(403).json({ message: "Refresh token is not in database!" });
+            return res.status(401).json({ 
+                success: false,
+                error: "Invalid refresh token" 
+            });
         }
         if (RefreshToken.verifyExpiration(refreshToken)) {
             RefreshToken.findByIdAndRemove(refreshToken._id, { useFindAndModify: false }).exec();
-            return res.status(403).json({ message: "Refresh token has expired!" });
+            return res.status(403).json({
+                success: false, 
+                error: "Refresh token has expired!" 
+            });
         }
         let newAccessToken = await createToken(refreshToken.user);
         return res.status(200).json({
+            success: true,
             message: 'Token refreshed successfully',
             token: {
                 accessToken: newAccessToken,
